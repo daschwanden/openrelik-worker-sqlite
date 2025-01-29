@@ -13,4 +13,6 @@ sqlite3 $1 <<!
 select * from $T;
 !
 
+echo "${T} table exported to ${T}.csv"
+
 done
