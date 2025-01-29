@@ -26,7 +26,7 @@ ENV OPENRELIK_PYDEBUG_PORT ${OPENRELIK_PYDEBUG_PORT:-5678}
 # Set working directory
 WORKDIR /openrelik
 
-COPY ./sqlite2csv.sh /openrelik/sqlite2csv.sh
+COPY ./scripts /openrelik/scripts
 
 # Copy poetry toml and install dependencies
 COPY ./pyproject.toml ./poetry.lock .

@@ -1,4 +1,4 @@
-# Copyright 2024 Google LLC
+# Copyright 2025 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 import os
 import shutil
 import subprocess
@@ -34,10 +33,11 @@ TASK_METADATA = {
     # by the user will be available to the task function when executing (task_config).
     "task_config": [
         {
-            "name": "<REPLACE_WITH_NAME>",
-            "label": "<REPLACE_WITH_LABEL>",
-            "description": "<REPLACE_WITH_DESCRIPTION>",
-            "type": "<REPLACE_WITH_TYPE>",  # Types supported: text, textarea, checkbox
+            "name": "forensic_artifact",
+            "label": "Select a Forensic Artifact to extract",
+            "description": "The Forensic Artifact",
+            "items": [ "None", "Exec Policy", "KnowledgeC DB", "Quarantine DB", "SystemPolicy DB", "TCC DB" ],
+            "type": "select",  # Types supported: text, textarea, checkbox
             "required": False,
         },
     ],
@@ -68,7 +68,20 @@ def command(
     """
     input_files = get_input_files(pipe_result, input_files or [])
     output_files = []
-    base_command = ["/openrelik/sqlite2csv.sh"]
+    forensic_artifact = task_config.get("forensic_artifact", "")
+
+    base_command = ["/openrelik/scripts/sqlite2csv.sh"]
+    if forensic_artifact == "Exec Policy":
+        base_command = ["/openrelik/scripts/execPolicy2csv.sh"]
+    elif forensic_artifact ==  "KnowledgeC DB":
+        base_command = ["/openrelik/scripts/knowledgeC2csv.sh"]
+    elif forensic_artifact ==  "Quarantine DB":
+        base_command = ["/openrelik/scripts/quarantine2csv.sh"]
+    elif forensic_artifact ==  "SystemPolicy DB":
+        base_command = ["/openrelik/scripts/systemPolicy2csv.sh"]
+    elif forensic_artifact ==  "TCC DB":
+        base_command = ["/openrelik/scripts/tcc2csv.sh"]
+
     base_command_string = " ".join(base_command)
 
     for input_file in input_files:
@@ -87,10 +100,8 @@ def command(
                 self.send_event("task-progress", data=None)
                 time.sleep(INTERVAL_SECONDS)
         
-        logging.error("--------------- os.getcwd(): %s", os.getcwd())
         filenames = os.listdir(os.getcwd())
         for csvfile in filenames:
-            logging.error("--------------- csvfile: %s", csvfile)
             if csvfile.endswith(".csv"):
                 csv_output_file = create_output_file(
                     output_path,
@@ -102,7 +113,7 @@ def command(
         output_files.append(output_file.to_dict())
 
     if not output_files:
-        raise RuntimeError("<REPLACE_WITH_ERROR_STRING>")
+        raise RuntimeError("Failed to export any tables.")
 
     return create_task_result(
         output_files=output_files,
