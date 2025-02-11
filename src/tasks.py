@@ -36,7 +36,7 @@ TASK_METADATA = {
             "name": "forensic_artifact",
             "label": "Select a Forensic Artifact to extract",
             "description": "The Forensic Artifact",
-            "items": [ "None", "Exec Policy", "KnowledgeC DB", "Quarantine DB", "SystemPolicy DB", "TCC DB" ],
+            "items": [ "None", "KnowledgeC DB", "Quarantine DB", "SystemPolicy DB", "TCC DB" ],
             "type": "select",  # Types supported: text, textarea, checkbox
             "required": False,
         },
@@ -71,9 +71,7 @@ def command(
     forensic_artifact = task_config.get("forensic_artifact", "")
 
     base_command = ["/openrelik/scripts/sqlite2csv.sh"]
-    if forensic_artifact == "Exec Policy":
-        base_command = ["/openrelik/scripts/execPolicy2csv.sh"]
-    elif forensic_artifact ==  "KnowledgeC DB":
+    if forensic_artifact ==  "KnowledgeC DB":
         base_command = ["/openrelik/scripts/knowledgeC2csv.sh"]
     elif forensic_artifact ==  "Quarantine DB":
         base_command = ["/openrelik/scripts/quarantine2csv.sh"]
